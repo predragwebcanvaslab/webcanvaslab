@@ -1,9 +1,42 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Send, Mail, MapPin, Phone } from "lucide-react"
+import { Send, Mail, MapPin, Phone, CheckCircle } from "lucide-react"
 
 export function ContactSection() {
   const [focused, setFocused] = useState("")
+  const [selectedBudget, setSelectedBudget] = useState("")
+  const [selectedServices, setSelectedServices] = useState<string[]>([])
+  const [submitted, setSubmitted] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+
+  const toggleService = (service: string) => {
+    setSelectedServices((prev) =>
+      prev.includes(service) ? prev.filter((s) => s !== service) : [...prev, service]
+    )
+  }
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setSubmitting(true)
+
+    const form = e.currentTarget
+    const formData = new FormData(form)
+    formData.set("budget", selectedBudget)
+    formData.set("services", selectedServices.join(", "))
+
+    try {
+      await fetch("/", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams(formData as unknown as Record<string, string>).toString(),
+      })
+      setSubmitted(true)
+    } catch {
+      alert("Something went wrong. Please try again.")
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
   return (
     <section id="contact" className="py-20 md:py-32 px-4 scroll-mt-20">
@@ -90,97 +123,133 @@ export function ContactSection() {
 
           {/* Contact Form */}
           <div className="lg:col-span-3">
-            <form
-              className="liquid-glass rounded-2xl p-8 space-y-6"
-              onSubmit={(e) => e.preventDefault()}
-            >
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                {/* Name */}
+            {submitted ? (
+              <div className="liquid-glass rounded-2xl p-12 flex flex-col items-center justify-center text-center min-h-[400px]">
+                <CheckCircle className="w-16 h-16 text-emerald-400 mb-6" />
+                <h3 className="text-2xl font-semibold text-foreground mb-3">Message Sent!</h3>
+                <p className="text-foreground/60 max-w-sm">
+                  Thank you for reaching out. We'll get back to you within 24 hours.
+                </p>
+              </div>
+            ) : (
+              <form
+                name="contact"
+                method="POST"
+                data-netlify="true"
+                netlify-honeypot="bot-field"
+                className="liquid-glass rounded-2xl p-8 space-y-6"
+                onSubmit={handleSubmit}
+              >
+                <input type="hidden" name="form-name" value="contact" />
+                <p className="hidden">
+                  <label>Don't fill this out: <input name="bot-field" /></label>
+                </p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  {/* Name */}
+                  <div className="relative">
+                    <label className={`absolute left-4 transition-all duration-200 pointer-events-none ${
+                      focused === "name" ? "top-2 text-xs text-primary" : "top-4 text-sm text-foreground/40"
+                    }`}>
+                      Your Name
+                    </label>
+                    <input
+                      type="text"
+                      name="name"
+                      required
+                      onFocus={() => setFocused("name")}
+                      onBlur={(e) => !e.target.value && setFocused("")}
+                      className="w-full bg-white/[0.03] border border-foreground/10 rounded-xl px-4 pt-7 pb-3 text-foreground text-sm outline-none focus:border-primary/50 focus:bg-white/[0.05] transition-all"
+                    />
+                  </div>
+
+                  {/* Email */}
+                  <div className="relative">
+                    <label className={`absolute left-4 transition-all duration-200 pointer-events-none ${
+                      focused === "email" ? "top-2 text-xs text-primary" : "top-4 text-sm text-foreground/40"
+                    }`}>
+                      Email Address
+                    </label>
+                    <input
+                      type="email"
+                      name="email"
+                      required
+                      onFocus={() => setFocused("email")}
+                      onBlur={(e) => !e.target.value && setFocused("")}
+                      className="w-full bg-white/[0.03] border border-foreground/10 rounded-xl px-4 pt-7 pb-3 text-foreground text-sm outline-none focus:border-primary/50 focus:bg-white/[0.05] transition-all"
+                    />
+                  </div>
+                </div>
+
+                {/* Budget */}
+                <div className="relative">
+                  <label className="block text-sm text-foreground/50 mb-3">Project Budget</label>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    {["$5k–$10k", "$10k–$25k", "$25k–$50k", "$50k+"].map((budget) => (
+                      <button
+                        key={budget}
+                        type="button"
+                        onClick={() => setSelectedBudget(budget)}
+                        className={`border rounded-xl px-4 py-3 text-sm transition-all cursor-pointer ${
+                          selectedBudget === budget
+                            ? "border-primary text-primary bg-primary/10"
+                            : "border-foreground/10 text-foreground/70 hover:border-primary/50 hover:text-primary hover:bg-primary/5"
+                        }`}
+                      >
+                        {budget}
+                      </button>
+                    ))}
+                  </div>
+                  <input type="hidden" name="budget" value={selectedBudget} />
+                </div>
+
+                {/* Services */}
+                <div className="relative">
+                  <label className="block text-sm text-foreground/50 mb-3">Services Needed</label>
+                  <div className="flex flex-wrap gap-2">
+                    {["Web Design", "Development", "UI/UX", "Branding", "E-commerce", "SEO"].map((service) => (
+                      <button
+                        key={service}
+                        type="button"
+                        onClick={() => toggleService(service)}
+                        className={`border rounded-full px-4 py-2 text-sm transition-all cursor-pointer ${
+                          selectedServices.includes(service)
+                            ? "border-primary text-primary bg-primary/10"
+                            : "border-foreground/10 text-foreground/60 hover:border-primary/50 hover:text-primary hover:bg-primary/5"
+                        }`}
+                      >
+                        {service}
+                      </button>
+                    ))}
+                  </div>
+                  <input type="hidden" name="services" value={selectedServices.join(", ")} />
+                </div>
+
+                {/* Message */}
                 <div className="relative">
                   <label className={`absolute left-4 transition-all duration-200 pointer-events-none ${
-                    focused === "name" ? "top-2 text-xs text-primary" : "top-4 text-sm text-foreground/40"
+                    focused === "message" ? "top-2 text-xs text-primary" : "top-4 text-sm text-foreground/40"
                   }`}>
-                    Your Name
+                    Tell us about your project
                   </label>
-                  <input
-                    type="text"
-                    onFocus={() => setFocused("name")}
+                  <textarea
+                    rows={4}
+                    name="message"
+                    onFocus={() => setFocused("message")}
                     onBlur={(e) => !e.target.value && setFocused("")}
-                    className="w-full bg-white/[0.03] border border-foreground/10 rounded-xl px-4 pt-7 pb-3 text-foreground text-sm outline-none focus:border-primary/50 focus:bg-white/[0.05] transition-all"
+                    className="w-full bg-white/[0.03] border border-foreground/10 rounded-xl px-4 pt-7 pb-3 text-foreground text-sm outline-none focus:border-primary/50 focus:bg-white/[0.05] transition-all resize-none"
                   />
                 </div>
 
-                {/* Email */}
-                <div className="relative">
-                  <label className={`absolute left-4 transition-all duration-200 pointer-events-none ${
-                    focused === "email" ? "top-2 text-xs text-primary" : "top-4 text-sm text-foreground/40"
-                  }`}>
-                    Email Address
-                  </label>
-                  <input
-                    type="email"
-                    onFocus={() => setFocused("email")}
-                    onBlur={(e) => !e.target.value && setFocused("")}
-                    className="w-full bg-white/[0.03] border border-foreground/10 rounded-xl px-4 pt-7 pb-3 text-foreground text-sm outline-none focus:border-primary/50 focus:bg-white/[0.05] transition-all"
-                  />
-                </div>
-              </div>
-
-              {/* Budget */}
-              <div className="relative">
-                <label className="block text-sm text-foreground/50 mb-3">Project Budget</label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  {["$5k–$10k", "$10k–$25k", "$25k–$50k", "$50k+"].map((budget) => (
-                    <button
-                      key={budget}
-                      type="button"
-                      className="border border-foreground/10 rounded-xl px-4 py-3 text-sm text-foreground/70 hover:border-primary/50 hover:text-primary hover:bg-primary/5 transition-all cursor-pointer focus:border-primary focus:text-primary focus:bg-primary/5"
-                    >
-                      {budget}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Services */}
-              <div className="relative">
-                <label className="block text-sm text-foreground/50 mb-3">Services Needed</label>
-                <div className="flex flex-wrap gap-2">
-                  {["Web Design", "Development", "UI/UX", "Branding", "E-commerce", "SEO"].map((service) => (
-                    <button
-                      key={service}
-                      type="button"
-                      className="border border-foreground/10 rounded-full px-4 py-2 text-sm text-foreground/60 hover:border-primary/50 hover:text-primary hover:bg-primary/5 transition-all cursor-pointer focus:border-primary focus:text-primary focus:bg-primary/5"
-                    >
-                      {service}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Message */}
-              <div className="relative">
-                <label className={`absolute left-4 transition-all duration-200 pointer-events-none ${
-                  focused === "message" ? "top-2 text-xs text-primary" : "top-4 text-sm text-foreground/40"
-                }`}>
-                  Tell us about your project
-                </label>
-                <textarea
-                  rows={4}
-                  onFocus={() => setFocused("message")}
-                  onBlur={(e) => !e.target.value && setFocused("")}
-                  className="w-full bg-white/[0.03] border border-foreground/10 rounded-xl px-4 pt-7 pb-3 text-foreground text-sm outline-none focus:border-primary/50 focus:bg-white/[0.05] transition-all resize-none"
-                />
-              </div>
-
-              {/* Submit */}
-              <Button variant="hero" className="w-full py-6 text-base gap-2">
-                Send Message <Send className="w-4 h-4" />
-              </Button>
-              <p className="text-foreground/30 text-xs text-center">
-                We respect your privacy. No spam, ever.
-              </p>
-            </form>
+                {/* Submit */}
+                <Button variant="hero" className="w-full py-6 text-base gap-2 cursor-pointer" disabled={submitting}>
+                  {submitting ? "Sending..." : "Send Message"} <Send className="w-4 h-4" />
+                </Button>
+                <p className="text-foreground/30 text-xs text-center">
+                  We respect your privacy. No spam, ever.
+                </p>
+              </form>
+            )}
           </div>
         </div>
       </div>
