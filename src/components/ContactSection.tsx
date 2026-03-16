@@ -15,20 +15,33 @@ export function ContactSection() {
     )
   }
 
+  const encode = (data: Record<string, string>) => {
+    return Object.keys(data)
+      .map((key) => encodeURIComponent(key) + "=" + encodeURIComponent(data[key]))
+      .join("&")
+  }
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setSubmitting(true)
 
     const form = e.currentTarget
-    const formData = new FormData(form)
-    formData.set("budget", selectedBudget)
-    formData.set("services", selectedServices.join(", "))
+    const nameVal = (form.elements.namedItem("name") as HTMLInputElement)?.value || ""
+    const emailVal = (form.elements.namedItem("email") as HTMLInputElement)?.value || ""
+    const messageVal = (form.elements.namedItem("message") as HTMLTextAreaElement)?.value || ""
 
     try {
       await fetch("/", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams(formData as unknown as Record<string, string>).toString(),
+        body: encode({
+          "form-name": "contact",
+          name: nameVal,
+          email: emailVal,
+          budget: selectedBudget,
+          services: selectedServices.join(", "),
+          message: messageVal,
+        }),
       })
       setSubmitted(true)
     } catch {
