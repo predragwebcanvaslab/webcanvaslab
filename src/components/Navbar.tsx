@@ -10,9 +10,7 @@ export function Navbar() {
       <nav className="fixed top-0 left-0 right-0 z-50 w-full py-4 px-8 flex flex-row items-center justify-between bg-background/80 backdrop-blur-xl border-b border-foreground/5">
         {/* Left: Logo */}
         <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
-          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground font-bold text-sm">
-            W
-          </div>
+          <img src="/logo.jpg" alt="WebCanvasLab" className="w-9 h-9" />
           <span className="text-foreground font-semibold text-lg tracking-tight">
             WebCanvasLab
           </span>

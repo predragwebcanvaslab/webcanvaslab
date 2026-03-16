@@ -5,9 +5,7 @@ export function Footer() {
         <div className="flex flex-col sm:flex-row items-center justify-between gap-6 mb-8">
           {/* Brand */}
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground font-bold text-sm">
-              W
-            </div>
+            <img src="/logo.jpg" alt="WebCanvasLab" className="w-9 h-9" />
             <span className="text-foreground font-semibold text-lg">WebCanvasLab</span>
           </div>
 
