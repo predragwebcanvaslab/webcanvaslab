@@ -29,10 +29,10 @@ const projects = [
 
 export function PortfolioSection() {
   return (
-    <section id="portfolio" className="py-32 px-4">
+    <section id="portfolio" className="py-20 md:py-32 px-4 scroll-mt-20">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="flex items-end justify-between mb-16">
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-12 md:mb-16">
           <div>
             <span className="text-primary text-sm font-semibold tracking-widest uppercase">
               Selected Work

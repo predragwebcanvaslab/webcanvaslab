@@ -93,7 +93,7 @@ export function HeroSection() {
 
         {/* Headline */}
         <h1
-          className="hero-stagger-2 text-[140px] sm:text-[180px] md:text-[230px] font-normal leading-[1] tracking-[-0.024em] text-center pb-4 overflow-visible"
+          className="hero-stagger-2 text-[72px] sm:text-[120px] md:text-[180px] lg:text-[230px] font-normal leading-[1] tracking-[-0.024em] text-center pb-4 overflow-visible"
           style={{
             fontFamily: "'General Sans', 'Manrope', sans-serif",
             backgroundImage: "linear-gradient(200deg, #F0F0F1 0%, #7EB8E5 100%)",
